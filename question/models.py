@@ -37,3 +37,12 @@ class ComprehensionChoice(models.Model):
 
     def __str__(self) -> str:
         return self.choice_text
+
+
+class Questionnaire(models.Model):
+    question_text = models.TextField(blank=True, null=True)
+    date_posted = models.DateTimeField(
+        auto_now_add=True, verbose_name="date posted", editable=False)
+    
+    def __str__(self) -> str:
+        return self.question_text

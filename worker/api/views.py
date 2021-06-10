@@ -33,34 +33,23 @@ def add_worker(request):
 @api_view(['POST', ])
 def get_attention_results(request):
     # Handle if worker not present later
-    worker = get_object_or_404(Worker, worker_id=request.data.get("w_id", -1))
-    all_responses = worker.attention_responses.all().filter(is_answer=True)
-    num_questions = AttentionCheckQuestion.objects.all().count()
-    if num_questions == all_responses.count():
-        worker.attention_check_done = True
-        worker.save()
-        return Response({"status": "pass"}, status=status.HTTP_200_OK)
-    else:
-        return Response({"status": "fail"}, status=status.HTTP_403_FORBIDDEN)
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get("worker_id", -1))
+    return Response({"attempted": worker.attention_all_attempted, "passed": worker.attention_passed}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST', ])
 def get_comprehension_results(request):
     # Handle if worker not present later
     worker = get_object_or_404(Worker, worker_id=request.data.get("w_id", -1))
-    all_responses = worker.comprehension_responses.all().filter(is_answer=True)
-    num_questions = ComprehensionQuestion.objects.all().count()
-    if num_questions == all_responses.count():
-        worker.comprehension_done = True
-        worker.save()
-        return Response({"status": "pass"}, status=status.HTTP_200_OK)
-    else:
-        return Response({"status": "fail"}, status=status.HTTP_403_FORBIDDEN)
+    return Response({"attempted": worker.comprehension_all_attempted, "passed": worker.comprehension_passed}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST', ])
 def set_worker_type(request):
     worker = get_object_or_404(Worker, worker_id=request.data.get("w_id", -1))
+    # Insert additional checks to ensure attention check and comprehension
+    # sections have been passed.
     if worker.type_work == -1:
         worker.type_work = random.randint(0, 1)
         worker.save()
@@ -69,8 +58,9 @@ def set_worker_type(request):
     else:
         return Response({"error": "Already worker type decided"}, status=status.status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST',])
+
+@api_view(['POST', ])
 def get_worker_type(request):
     worker = get_object_or_404(Worker, worker_id=request.data.get("w_id", -1))
-    return Response({"worker_id": worker.worker_id, 
+    return Response({"worker_id": worker.worker_id,
                     "type_work": worker.type_work}, status=status.HTTP_200_OK)
