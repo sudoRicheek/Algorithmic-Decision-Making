@@ -16,7 +16,7 @@ def post_att_check_response(request):
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
     if worker.attention_all_attempted:
-        return Response({"status": "Worker has already attempted Attention Test"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"status": "alreadyAttempted"}, status=status.HTTP_403_FORBIDDEN)
 
     correctCount = 0
     for answerDict in request.data.get("answers", []):
@@ -44,12 +44,17 @@ def post_att_check_response(request):
 
 @api_view(['POST', ])
 def post_comprehension_response(request):
+    ## Checks keys instead of counting answers.
     if len(request.data.get("answers", [])) != ComprehensionQuestion.objects.all().count():
         return Response({"status": "All questions must be answered before submitting"}, status=status.HTTP_400_BAD_REQUEST)
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
+    if not worker.attention_all_attempted:
+        return Response({"status": "attentionNoAttempt"}, status=status.HTTP_400_BAD_REQUEST)
+    if not worker.attention_passed:
+        return Response({"status": "attentionFailed"}, status=status.HTTP_403_FORBIDDEN)
     if worker.comprehension_all_attempted:
-        return Response({"status": "Worker has already attempted Comprehension Test"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"status": "alreadyAttempted"}, status=status.HTTP_403_FORBIDDEN)
 
     correctCount = 0
     for answerDict in request.data.get("answers", []):

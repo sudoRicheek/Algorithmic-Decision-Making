@@ -41,7 +41,8 @@ def get_attention_results(request):
 @api_view(['POST', ])
 def get_comprehension_results(request):
     # Handle if worker not present later
-    worker = get_object_or_404(Worker, worker_id=request.data.get("w_id", -1))
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get("worker_id", -1))
     return Response({"attempted": worker.comprehension_all_attempted, "passed": worker.comprehension_passed}, status=status.HTTP_200_OK)
 
 
