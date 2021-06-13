@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     'corsheaders',
     'rest_framework',
 
@@ -47,9 +47,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    
+
     'corsheaders.middleware.CorsMiddleware',
-    
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -58,8 +58,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:4200',
+    # 'http://192.168.0.106:4200',
 ]
 
 ROOT_URLCONF = 'adm.urls'
@@ -88,8 +90,12 @@ WSGI_APPLICATION = 'adm.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'adm-database',
+        'USER': 'adm-database',
+        'PASSWORD': '2001richeek',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 

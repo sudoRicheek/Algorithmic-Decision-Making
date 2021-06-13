@@ -6,7 +6,7 @@ from worker.api.views import (
     get_attention_results,
     get_comprehension_results,
     get_worker_type,
-    set_worker_type,
+    submit_worker_beliefs,
 )
 
 app_name = 'worker'
@@ -16,8 +16,8 @@ urlpatterns = [
          name='worker-api-attention-check-results'),
     path('get_comprehension_results/', get_comprehension_results,
          name='worker-api-get-comprehension-results'),
-    path('set_worker_type/', set_worker_type,
-         name='worker-api-set-worker-type'),
     path('get_worker_type/', get_worker_type,
          name='worker-api-get-worker-type'),
+    path('submit_worker_beliefs/', submit_worker_beliefs,
+         name='worker-api-submit-worker-beliefs'),
 ]

@@ -1,3 +1,4 @@
+import random
 from rest_framework import status
 from rest_framework import response
 from rest_framework.response import Response
@@ -11,12 +12,15 @@ from worker.models import Worker
 
 @api_view(['POST', ])
 def post_att_check_response(request):
-    if len(request.data.get("answers", [])) != AttentionCheckQuestion.objects.all().count():
-        return Response({"status": "All questions must be answered before submitting"}, status=status.HTTP_400_BAD_REQUEST)
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
     if worker.attention_all_attempted:
         return Response({"status": "alreadyAttempted"}, status=status.HTTP_403_FORBIDDEN)
+
+    q_list = [q.get('q_id', -1) for q in request.data.get("answers", [])]
+    q_list = set(q_list)
+    if len(q_list) != AttentionCheckQuestion.objects.all().count():
+        return Response({"status": "All questions must be answered before submitting"}, status=status.HTTP_400_BAD_REQUEST)
 
     correctCount = 0
     for answerDict in request.data.get("answers", []):
@@ -44,9 +48,6 @@ def post_att_check_response(request):
 
 @api_view(['POST', ])
 def post_comprehension_response(request):
-    ## Checks keys instead of counting answers.
-    if len(request.data.get("answers", [])) != ComprehensionQuestion.objects.all().count():
-        return Response({"status": "All questions must be answered before submitting"}, status=status.HTTP_400_BAD_REQUEST)
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
     if not worker.attention_all_attempted:
@@ -55,6 +56,11 @@ def post_comprehension_response(request):
         return Response({"status": "attentionFailed"}, status=status.HTTP_403_FORBIDDEN)
     if worker.comprehension_all_attempted:
         return Response({"status": "alreadyAttempted"}, status=status.HTTP_403_FORBIDDEN)
+
+    q_list = [q.get('q_id', -1) for q in request.data.get("answers", [])]
+    q_list = set(q_list)
+    if len(q_list) != ComprehensionQuestion.objects.all().count():
+        return Response({"status": "All questions must be answered before submitting"}, status=status.HTTP_400_BAD_REQUEST)
 
     correctCount = 0
     for answerDict in request.data.get("answers", []):
@@ -67,21 +73,30 @@ def post_comprehension_response(request):
         choice = get_object_or_404(ComprehensionChoice, pk=c_id)
 
         worker.comprehension_responses.add(choice)
-        correct_choices = question.comprehensionchoice_set.filter(is_answer=True)
+        correct_choices = question.comprehensionchoice_set.filter(
+            is_answer=True)
         if choice in correct_choices:
             correctCount += 1
 
     worker.comprehension_all_attempted = True
-    # Set whatever the passign criteria
+    # Set the passing criteria. Right now all the answers need to be correct to pass
     if correctCount == ComprehensionQuestion.objects.all().count():
         worker.comprehension_passed = True
+        if worker.type_work == -1:
+            worker.type_work = random.randint(0, 1)
     worker.save()
 
-    return Response({"status": "Answers Submitted Successfully"}, status=status.HTTP_200_OK)
+    response_data = {}
+    response_data["worker_id"] = worker.worker_id
+    response_data["status"] = "Answers Submitted Successfully"
+    response_data["comprehension_all_attempted"] = worker.comprehension_all_attempted
+    response_data["comprehension_passed"] = worker.comprehension_passed
+    response_data["type_work"] = worker.type_work
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
-
-@api_view(['GET', ])
+@ api_view(['GET', ])
 def get_attention_questions(request):
     attentioncheck_questions = AttentionCheckQuestion.objects.all()
     data = {}
@@ -94,7 +109,7 @@ def get_attention_questions(request):
     return Response(data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET', ])
+@ api_view(['GET', ])
 def get_comprehension_questions(request):
     comprehension_questions = ComprehensionQuestion.objects.all()
     data = {}
