@@ -23,5 +23,13 @@ class Worker(models.Model):
     belief_elicitation = ArrayField(ArrayField(models.IntegerField(default=-1,blank=True), default=list), default=list)
     belief_elicitation_attempted = models.BooleanField(default=False)
 
+    # 1 is Human
+    # 2 is Human + DSS
+    # 3 is Autonomous Agent
+    # These fields are only exclusive to Responders! type_work = 0
+    approach_decision = models.IntegerField(default=-1) # from 1 to 3
+    minimum_offer = models.IntegerField(default=-1) # from 1 to 6
+    decision_and_minoffer_submitted = models.BooleanField(default=False)
+
     def __str__(self) -> str:
         return self.worker_id

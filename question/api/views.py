@@ -1,4 +1,5 @@
 import random
+import time
 from rest_framework import status
 from rest_framework import response
 from rest_framework.response import Response
@@ -12,6 +13,13 @@ from worker.models import Worker
 
 @api_view(['POST', ])
 def post_att_check_response(request):
+    # time.sleep(2)
+    # If worker not found -> make worker
+    if 'worker_id' in request.data.keys() and not Worker.objects.filter(worker_id=request.data.get("worker_id")).exists():
+        new_worker = Worker(worker_id=request.data.get("worker_id", ""))
+        new_worker.save()
+
+    # Get worker -> add responses
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
     if worker.attention_all_attempted:
@@ -43,7 +51,13 @@ def post_att_check_response(request):
         worker.attention_passed = True
     worker.save()
 
-    return Response({"status": "Answers Submitted Successfully"}, status=status.HTTP_200_OK)
+    response_data = {}
+    response_data["worker_id"] = worker.worker_id
+    response_data["status"] = "Answers Submitted Successfully"
+    response_data["attention_all_attempted"] = worker.attention_all_attempted
+    response_data["attention_passed"] = worker.attention_passed
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST', ])
@@ -84,6 +98,7 @@ def post_comprehension_response(request):
         worker.comprehension_passed = True
         if worker.type_work == -1:
             worker.type_work = random.randint(0, 1)
+            # worker.type_work = 0
     worker.save()
 
     response_data = {}
@@ -98,6 +113,7 @@ def post_comprehension_response(request):
 
 @ api_view(['GET', ])
 def get_attention_questions(request):
+    time.sleep(2)
     attentioncheck_questions = AttentionCheckQuestion.objects.all()
     data = {}
     data['questions'] = [{"id": question.id,

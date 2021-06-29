@@ -75,8 +75,9 @@ def submit_worker_beliefs(request):
     if worker.belief_elicitation_attempted:
         return Response({"status": "alreadyAttempted"}, status=status.HTTP_403_FORBIDDEN)
 
+    # Ensure row number is between 1 and 21
     if worker.type_work == 0:
-        predictions = [predictions[:6],predictions[6:12],predictions[12:]]
+        predictions = [predictions[:6], predictions[6:12], predictions[12:]]
     elif worker.type_work == 1:
         predictions = [predictions]
 
@@ -87,6 +88,39 @@ def submit_worker_beliefs(request):
     response_data = {}
     response_data['status'] = "beliefelicitation submitted"
     response_data['worker_id'] = worker.worker_id
+    response_data['type_work'] = worker.type_work
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+def submit_approach_decision_minoffer(request):
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get("worker_id", -1))
+    if worker.decision_and_minoffer_submitted:
+        return Response({"status": "alreadySubmitted"}, status=status.HTTP_400_BAD_REQUEST)
+    if not worker.belief_elicitation_attempted or worker.type_work != 0:
+        return Response({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+    approach_decision = request.data.get("approach_decision", -1)
+    if approach_decision not in [1, 2, 3]:
+        return Response({"status": "badchoice"}, status=status.HTTP_400_BAD_REQUEST)
+
+    minimum_offer = request.data.get("minimum_offer",-1)
+    if minimum_offer not in [1,2,3,4,5,6]:
+        return Response({"status": "badchoice"}, status=status.HTTP_400_BAD_REQUEST)
+
+    worker.approach_decision = approach_decision
+    worker.minimum_offer = minimum_offer
+    worker.decision_and_minoffer_submitted = True
+    worker.save()
+
+    response_data = {}
+    response_data['status'] = "approach_decision submitted"
+    response_data['worker_id'] = worker.worker_id
+    response_data['approach_decision'] = worker.approach_decision
+    response_data['minimum_offer'] = worker.minimum_offer
+    response_data['approach_decision_minoffer_submitted'] = worker.decision_and_minoffer_submitted
     response_data['type_work'] = worker.type_work
 
     return Response(response_data, status=status.HTTP_200_OK)
