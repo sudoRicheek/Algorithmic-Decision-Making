@@ -1,13 +1,12 @@
 import random
 import time
 from rest_framework import status
-from rest_framework import response
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from django.shortcuts import get_object_or_404
 
-from question.models import AttentionCheckQuestion, AttentionChoice, ComprehensionChoice, ComprehensionQuestion
+from question.models import AttentionCheckQuestion, AttentionChoice, ComprehensionChoice, ComprehensionQuestion, PostExperimentalChoice, PostExperimentalQuestion
 from worker.models import Worker
 
 
@@ -111,7 +110,41 @@ def post_comprehension_response(request):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@ api_view(['GET', ])
+@api_view(['POST', ])
+def post_postexperimental_response(request):
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get('worker_id', -1))
+    if not ((worker.decision_and_minoffer_submitted and worker.type_work == 0) or (worker.belief_elicitation_attempted and worker.type_work == 1)):
+        return Response({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+    q_list = [q.get('q_id', -1) for q in request.data.get("responses", [])]
+    q_list = set(q_list)
+    if len(q_list) != PostExperimentalQuestion.objects.all().count():
+        return Response({"status": "All questions must be answered"}, status=status.HTTP_400_BAD_REQUEST)
+
+    for answerDict in request.data.get("responses", []):
+        q_id = answerDict.get('q_id', -1)
+        c_id = answerDict.get('c_id', -1)
+        if q_id == -1 or c_id == -1:
+            return Response({"status": "q_id and c_id must be present"}, status=status.HTTP_400_BAD_REQUEST)
+
+        question = get_object_or_404(PostExperimentalQuestion, pk=q_id)
+        choice = get_object_or_404(PostExperimentalChoice, pk=c_id)
+
+        worker.postexperimental_responses.add(choice)
+    worker.postexperimental_submitted = True
+    worker.save()
+
+    response_data = {}
+    response_data["worker_id"] = worker.worker_id
+    response_data["type_work"] = worker.type_work
+    response_data["status"] = "Answers Submitted Successfully"
+    response_data["postexperimental_submitted"] = worker.postexperimental_submitted
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', ])
 def get_attention_questions(request):
     time.sleep(2)
     attentioncheck_questions = AttentionCheckQuestion.objects.all()
@@ -125,7 +158,7 @@ def get_attention_questions(request):
     return Response(data, status=status.HTTP_200_OK)
 
 
-@ api_view(['GET', ])
+@api_view(['GET', ])
 def get_comprehension_questions(request):
     comprehension_questions = ComprehensionQuestion.objects.all()
     data = {}
@@ -137,3 +170,38 @@ def get_comprehension_questions(request):
                                        } for choice in question.comprehensionchoice_set.all()],
                           } for question in comprehension_questions]
     return Response(data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+def get_postexperimental_questions(request):
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get("worker_id", -1))
+    if (worker.decision_and_minoffer_submitted and worker.type_work == 0) or (worker.belief_elicitation_attempted and worker.type_work == 1):
+        postexperimental_questions = PostExperimentalQuestion.objects.all()
+        data = {}
+        data['status'] = "pass"
+        data['type_work'] = worker.type_work
+        data['questions'] = [{"id": question.id,
+                              "question_text": question.question_text,
+                              "date_posted": question.date_posted,
+                              "choices": [{"id": choice.id,
+                                           "choice_text": choice.choice_text,
+                                           } for choice in question.postexperimentalchoice_set.all()],
+                              } for question in postexperimental_questions]
+        return Response(data, status=status.HTTP_200_OK)
+    return Response({"status": "fail"}, status=status.HTTP_403_FORBIDDEN)
+
+@api_view(['POST', ])
+def get_dss_response(request):
+    allocationSent = request.data.get("allocationSentToDSS", -1)
+    print(allocationSent)
+    if allocationSent not in [1, 2, 3, 4, 5, 6]:
+        return Response({"status": "Bad Allocation"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Dummy DSS
+    response_data = {}
+    response_data['allocationSentToDSS'] = allocationSent
+    response_data['likelihoodAcceptanceValue'] = random.uniform(0, 1)
+    response_data['likelihoodMaximumIncome'] = random.uniform(0, 1)
+    return Response(response_data, status=status.HTTP_200_OK)
+    

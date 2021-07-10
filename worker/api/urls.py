@@ -7,6 +7,7 @@ from worker.api.views import (
     get_comprehension_results,
     get_worker_type,
     submit_approach_decision_minoffer,
+    submit_dss_proposer_response,
     submit_worker_beliefs,
 )
 
@@ -23,4 +24,6 @@ urlpatterns = [
          name='worker-api-submit-worker-beliefs'),
     path('submit_approach_decision_minoffer/', submit_approach_decision_minoffer,
          name='worker-api-submit-approach-decision-and-minimum-offer'),
+    path('submit_dss_proposer_response/', submit_dss_proposer_response,
+         name='worker-api-submit-dss-proposer-response'),
 ]

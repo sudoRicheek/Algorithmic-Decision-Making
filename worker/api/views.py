@@ -1,5 +1,4 @@
 from rest_framework import status
-from rest_framework import response
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
@@ -8,8 +7,6 @@ from django.shortcuts import get_object_or_404
 from question.models import AttentionCheckQuestion, ComprehensionQuestion
 from worker.models import Worker
 
-import os
-import random
 from pytz import timezone
 
 
@@ -106,8 +103,8 @@ def submit_approach_decision_minoffer(request):
     if approach_decision not in [1, 2, 3]:
         return Response({"status": "badchoice"}, status=status.HTTP_400_BAD_REQUEST)
 
-    minimum_offer = request.data.get("minimum_offer",-1)
-    if minimum_offer not in [1,2,3,4,5,6]:
+    minimum_offer = request.data.get("minimum_offer", -1)
+    if minimum_offer not in [1, 2, 3, 4, 5, 6]:
         return Response({"status": "badchoice"}, status=status.HTTP_400_BAD_REQUEST)
 
     worker.approach_decision = approach_decision
@@ -123,4 +120,28 @@ def submit_approach_decision_minoffer(request):
     response_data['approach_decision_minoffer_submitted'] = worker.decision_and_minoffer_submitted
     response_data['type_work'] = worker.type_work
 
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+def submit_dss_proposer_response(request):
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get("worker_id", -1))
+    if worker.type_work != 1:
+        return Response({"status": "notAllowedHere"}, status=status.HTTP_403_FORBIDDEN)
+
+    if worker.dssProposerAllocation != -1:
+        return Response({"status": "Already Submitted"}, status=status.HTTP_403_FORBIDDEN)
+
+    allocationSubmitted = request.data.get('allocationSubmitted', -1)
+    if allocationSubmitted not in [1, 2, 3, 4, 5, 6]:
+        return Response({"status": "Bad Allocation"}, status=status.HTTP_400_BAD_REQUEST)
+
+    worker.dssProposerAllocation = allocationSubmitted
+    worker.save()
+
+    response_data = {}
+    response_data["status"] = "Allocation Submitted"
+    response_data["worker_id"] = worker.worker_id
+    response_data["allocationSubmitted"] = allocationSubmitted
     return Response(response_data, status=status.HTTP_200_OK)
