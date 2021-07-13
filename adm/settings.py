@@ -104,17 +104,18 @@ WSGI_APPLICATION = 'adm.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-if os.path.isfile(dotenv_file):
-    DATABASES = {
-        'default': {
-            'ENGINE': os.environ['ENGINE'],
-            'NAME': os.environ['NAME'],
-            'USER': os.environ['USER'],
-            'PASSWORD': os.environ['PASSWORD'],
-            'HOST':os.environ['HOST'],
-            'PORT': os.environ['PORT'],
-        }
+
+# if os.path.isfile(dotenv_file):
+DATABASES = {
+    'default': {
+        'ENGINE': os.environ['ENGINE'],
+        'NAME': os.environ['NAME'],
+        'USER': os.environ['USER'],
+        'PASSWORD': os.environ['PASSWORD'],
+        'HOST':os.environ['HOST'],
+        'PORT': os.environ['PORT'],
     }
+}
 
 db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES['default'].update(db_from_env)
