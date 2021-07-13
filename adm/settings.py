@@ -104,6 +104,8 @@ WSGI_APPLICATION = 'adm.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+DATABASES = {}
+
 if os.path.isfile(dotenv_file):
     DATABASES = {
         'default': {
