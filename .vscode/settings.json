@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
-    "backend\\adm\\Lib\\site-packages",
+        "backend\\adm\\Lib\\site-packages",
+        "admenv\\Lib\\site-packages"
     ]
 }
