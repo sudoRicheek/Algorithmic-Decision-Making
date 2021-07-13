@@ -146,7 +146,7 @@ def post_postexperimental_response(request):
 
 @api_view(['GET', ])
 def get_attention_questions(request):
-    time.sleep(2)
+    # time.sleep(2)
     attentioncheck_questions = AttentionCheckQuestion.objects.all()
     data = {}
     data['questions'] = [{"id": question.id,
