@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 from question.models import AttentionCheckQuestion, ComprehensionQuestion
 from worker.models import Worker
 
+import secrets
+
 from pytz import timezone
 
 
@@ -144,4 +146,26 @@ def submit_dss_proposer_response(request):
     response_data["status"] = "Allocation Submitted"
     response_data["worker_id"] = worker.worker_id
     response_data["allocationSubmitted"] = allocationSubmitted
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+def get_uniquecode(request):
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get("worker_id", -1))
+    if worker.unique_code_generated:
+        return Response({"status": "Unique Code", "unique_code": worker.unique_code}, status=status.HTTP_200_OK)
+    
+    if worker.attention_passed and worker.comprehension_passed and worker.belief_elicitation_attempted and worker.postexperimental_submitted:
+        worker.unique_code = secrets.token_urlsafe(32)
+        worker.unique_code_generated = True
+        worker.save()
+    else:
+        return Response({"status": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+    response_data = {}
+    response_data["status"] = "Unique Code"
+    response_data["worker_id"] = worker.worker_id
+    response_data["unique_code"] = worker.unique_code
+
     return Response(response_data, status=status.HTTP_200_OK)

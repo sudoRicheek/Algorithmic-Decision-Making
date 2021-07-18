@@ -1,10 +1,10 @@
-from django.shortcuts import get_object_or_404
 from django.urls import path
 
 from worker.api.views import (
     add_worker,
     get_attention_results,
     get_comprehension_results,
+    get_uniquecode,
     get_worker_type,
     submit_approach_decision_minoffer,
     submit_dss_proposer_response,
@@ -13,7 +13,8 @@ from worker.api.views import (
 
 app_name = 'worker'
 urlpatterns = [
-    path('addworker/', add_worker, name='worker-api-add'),
+    path('addworker/', add_worker,
+         name='worker-api-add'),
     path('get_attention_results/', get_attention_results,
          name='worker-api-attention-check-results'),
     path('get_comprehension_results/', get_comprehension_results,
@@ -26,4 +27,6 @@ urlpatterns = [
          name='worker-api-submit-approach-decision-and-minimum-offer'),
     path('submit_dss_proposer_response/', submit_dss_proposer_response,
          name='worker-api-submit-dss-proposer-response'),
+    path('get_uniquecode/', get_uniquecode,
+         name='worker-api-get-unique-code'),
 ]

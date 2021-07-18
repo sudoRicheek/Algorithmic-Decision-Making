@@ -50,6 +50,7 @@ class WorkerAdmin(admin.ModelAdmin):
                     'belief_elicitation_attempted',
                     'postexperimental_submitted')
     list_filter = ('attention_passed', 'comprehension_passed')
+    readonly_fields = ('unique_code',)
     ordering = ['worker_id']
     actions = [download_csv]
 
