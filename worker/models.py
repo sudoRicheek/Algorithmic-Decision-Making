@@ -40,7 +40,7 @@ class Worker(models.Model):
 
     # Unique-code for marking completion of the survey
     unique_code = models.CharField(
-        max_length=300, editable=False, blank=True, unique=True)
+        max_length=300, editable=False, blank=True)
     unique_code_generated = models.BooleanField(default=False)
 
     def __str__(self) -> str:
