@@ -76,7 +76,7 @@ MIDDLEWARE = [
 
 # CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:4200',
+    # 'http://localhost:4200',
     # 'http://192.168.0.106:4200',
     'https://algorithmic-decision-making.herokuapp.com',
 ]
