@@ -1,7 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-from question.models import AttentionChoice, ComprehensionChoice, PostExperimentalChoice
+from question.models import AttentionChoice, ComprehensionBeliefChoice, ComprehensionChoice, PostExperimentalChoice
 
 
 class Worker(models.Model):
@@ -9,6 +9,14 @@ class Worker(models.Model):
     attention_responses = models.ManyToManyField(AttentionChoice, blank=True)
     attention_all_attempted = models.BooleanField(default=False)
     attention_passed = models.BooleanField(default=False)
+
+    negative_reciprocity = ArrayField(models.IntegerField(
+        default=-1, blank=True), default=list)
+    sex = models.CharField(max_length=10, blank=True)
+    age = models.IntegerField(default=1)
+    employment_status = models.CharField(max_length=100, blank=True)
+    highest_degree = models.CharField(max_length=100, blank=True)
+    survey_submitted = models.BooleanField(default=False)
 
     comprehension_responses = models.ManyToManyField(
         ComprehensionChoice, blank=True)
@@ -19,6 +27,11 @@ class Worker(models.Model):
     # 0 => responder
     # 1 => proposer
     type_work = models.IntegerField(default=-1)
+
+    comprehension_belief_responses = models.ManyToManyField(
+        ComprehensionBeliefChoice, blank=True)
+    comprehension_belief_all_attempted = models.BooleanField(default=False)
+    comprehension_belief_passed = models.BooleanField(default=False)
 
     dssProposerAllocation = models.IntegerField(default=-1)
 
@@ -34,8 +47,24 @@ class Worker(models.Model):
     minimum_offer = models.IntegerField(default=-1)  # from 1 to 6
     decision_and_minoffer_submitted = models.BooleanField(default=False)
 
-    postexperimental_responses = models.ManyToManyField(
-        PostExperimentalChoice, blank=True)
+    # postexperimental_responses = models.ManyToManyField(
+    #     PostExperimentalChoice, blank=True)
+    # postexperimental_submitted = models.BooleanField(default=False)
+
+    # Post Experimental Question Fields
+    reason_approach_postexp = models.CharField(max_length=512)
+    rethink_approach_postexp = models.IntegerField(default=-1)
+    unfair_postexp = ArrayField(models.IntegerField(
+        default=-1, blank=True), default=list)
+    dss_postexp = ArrayField(models.IntegerField(
+        default=-1, blank=True), default=list)
+    autonomousagent_postexp = ArrayField(models.IntegerField(
+        default=-1, blank=True), default=list)
+    attention_postexp = models.BooleanField(default=False)
+    personality_postexp = ArrayField(models.IntegerField(
+        default=-1, blank=True), default=list)
+    most_responders_bargain_with_postexp = ArrayField(models.IntegerField(
+        default=-1, blank=True), default=list)
     postexperimental_submitted = models.BooleanField(default=False)
 
     # Unique-code for marking completion of the survey

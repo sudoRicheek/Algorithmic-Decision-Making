@@ -6,6 +6,8 @@ from worker.api.views import (
     get_comprehension_results,
     get_uniquecode,
     get_worker_type,
+    post_postexperimental_responder,
+    post_survey_responses,
     submit_approach_decision_minoffer,
     submit_dss_proposer_response,
     submit_worker_beliefs,
@@ -29,4 +31,8 @@ urlpatterns = [
          name='worker-api-submit-dss-proposer-response'),
     path('get_uniquecode/', get_uniquecode,
          name='worker-api-get-unique-code'),
+    path('post_postexperimental_responder/', post_postexperimental_responder,
+         name='worker-api-post-post-experimental-responder'),
+    path('post_survey_responses/', post_survey_responses,
+         name='worker-api-post-survey-responses'),
 ]

@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, resolve_url
 
 from question.models import AttentionCheckQuestion, ComprehensionQuestion
 from worker.models import Worker
@@ -155,8 +155,8 @@ def get_uniquecode(request):
         Worker, worker_id=request.data.get("worker_id", -1))
     if worker.unique_code_generated:
         return Response({"status": "Unique Code", "unique_code": worker.unique_code}, status=status.HTTP_200_OK)
-    
-    if worker.attention_passed and worker.comprehension_passed and worker.belief_elicitation_attempted and worker.postexperimental_submitted:
+
+    if worker.attention_passed and worker.survey_submitted and worker.comprehension_passed and worker.comprehension_belief_passed and worker.belief_elicitation_attempted and worker.postexperimental_submitted:
         worker.unique_code = secrets.token_urlsafe(32)
         worker.unique_code_generated = True
         worker.save()
@@ -169,3 +169,61 @@ def get_uniquecode(request):
     response_data["unique_code"] = worker.unique_code
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+def post_postexperimental_responder(request):
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get("worker_id", -1))
+    if worker.postexperimental_submitted:
+        return Response({"status": "alreadySubmitted"}, status=status.HTTP_400_BAD_REQUEST)
+
+    reasonApproach = request.data.get("reasonApproach", "")
+    rethinkApproach = request.data.get("rethinkApproach", -1)
+
+    unfair = [e for e in request.data.get("unfair", [])]
+    dss = [e for e in request.data.get("dss", [])]
+    autonomousagent = [e for e in request.data.get("autonomousagent", [])]
+
+    attentioncheck = request.data.get("attentioncheck", -1)
+    personality = [request.data.get("personality", -1)]
+    mostRespondersBargainWith = [
+        request.data.get("mostRespondersBargainWith", -1)]
+
+    worker.reason_approach_postexp = reasonApproach
+    worker.rethink_approach_postexp = rethinkApproach
+    worker.unfair_postexp = unfair
+    worker.dss_postexp = dss
+    worker.autonomousagent_postexp = autonomousagent
+    worker.attention_postexp = (attentioncheck == 2)  # Hardcoded, lack of time
+    worker.personality_postexp = personality
+    worker.most_responders_bargain_with_postexp = mostRespondersBargainWith
+    worker.postexperimental_submitted = True
+    worker.save()
+
+    return Response({"status": "Post Experimental Submitted Sucessfully"}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+def post_survey_responses(request):
+    worker = get_object_or_404(
+        Worker, worker_id=request.data.get("worker_id", -1))
+
+    if worker.survey_submitted:
+        return Response({"status": "alreadySubmitted"}, status=status.HTTP_400_BAD_REQUEST)
+
+    nr = [e for e in request.data.get("nr", [])]
+    sex = request.data.get("sex", '')
+    age = request.data.get("age", 1)
+    employmentStatus = request.data.get("employmentStatus", '')
+    highestDegree = request.data.get("highestDegree", '')
+
+    worker.negative_reciprocity = nr
+    worker.sex = sex
+    worker.age = age
+    worker.employment_status = employmentStatus
+    worker.highest_degree = highestDegree
+    worker.survey_submitted = True
+    worker.save()
+
+    return Response({"status": "Survey Submitted Sucessfully"}, status=status.HTTP_200_OK)
