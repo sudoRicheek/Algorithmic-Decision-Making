@@ -213,11 +213,13 @@ def post_survey_responses(request):
         return Response({"status": "alreadySubmitted"}, status=status.HTTP_400_BAD_REQUEST)
 
     nr = [e for e in request.data.get("nr", [])]
+    svo = [e for e in request.data.get("SVO", [])]
     sex = request.data.get("sex", '')
     age = request.data.get("age", 1)
     employmentStatus = request.data.get("employmentStatus", '')
     highestDegree = request.data.get("highestDegree", '')
 
+    worker.svo_selected_indices = svo
     worker.negative_reciprocity = nr
     worker.sex = sex
     worker.age = age

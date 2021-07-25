@@ -10,6 +10,8 @@ class Worker(models.Model):
     attention_all_attempted = models.BooleanField(default=False)
     attention_passed = models.BooleanField(default=False)
 
+    svo_selected_indices = ArrayField(models.IntegerField(
+        default=-1, blank=True), default=list)
     negative_reciprocity = ArrayField(models.IntegerField(
         default=-1, blank=True), default=list)
     sex = models.CharField(max_length=10, blank=True)
