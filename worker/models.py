@@ -21,6 +21,7 @@ class Worker(models.Model):
     comprehension_responses = models.ManyToManyField(
         ComprehensionChoice, blank=True)
     comprehension_all_attempted = models.BooleanField(default=False)
+    comprehension_failed_times = models.IntegerField(default=0)
     comprehension_passed = models.BooleanField(default=False)
 
     # -1 => Not decided
@@ -31,6 +32,7 @@ class Worker(models.Model):
     comprehension_belief_responses = models.ManyToManyField(
         ComprehensionBeliefChoice, blank=True)
     comprehension_belief_all_attempted = models.BooleanField(default=False)
+    comprehension_belief_failed_times = models.IntegerField(default=0)
     comprehension_belief_passed = models.BooleanField(default=False)
 
     dssProposerAllocation = models.IntegerField(default=-1)

@@ -26,7 +26,6 @@ def post_att_check_response(request):
     if worker.attention_all_attempted:
         return Response({"status": "alreadyFailed"}, status=status.HTTP_400_BAD_REQUEST)
 
-
     q_list = [q.get('q_id', -1) for q in request.data.get("answers", [])]
     q_list = set(q_list)
     if len(q_list) != AttentionCheckQuestion.objects.all().count():
@@ -94,19 +93,28 @@ def post_comprehension_response(request):
         if choice in correct_choices:
             correctCount += 1
 
-    worker.comprehension_all_attempted = True
-    # Set the passing criteria. Right now all the answers need to be correct to pass
-    if correctCount == ComprehensionQuestion.objects.all().count():
-        worker.comprehension_passed = True
-        if worker.type_work == -1:
-            # worker.type_work = random.randint(0, 1)
-            worker.type_work = 0
-    worker.save()
+    if worker.comprehension_failed_times < 2:
+        # Set the passing criteria. Right now all the answers need to be correct to pass
+        if correctCount == ComprehensionQuestion.objects.all().count():
+            worker.comprehension_passed = True
+            worker.comprehension_all_attempted = True
+            if worker.type_work == -1:
+                # worker.type_work = random.randint(0, 1)
+                worker.type_work = 0
+        else:
+            worker.comprehension_failed_times += 1
+        worker.save()
+
+    if worker.comprehension_failed_times == 2:
+        worker.comprehension_all_attempted = True
+        worker.comprehension_passed = False
+        worker.save()
 
     response_data = {}
     response_data["worker_id"] = worker.worker_id
     response_data["status"] = "Answers Submitted Successfully"
     response_data["comprehension_all_attempted"] = worker.comprehension_all_attempted
+    response_data["comprehension_failed_times"] = worker.comprehension_failed_times
     response_data["comprehension_passed"] = worker.comprehension_passed
     response_data["type_work"] = worker.type_work
 
@@ -149,16 +157,25 @@ def post_comprehension_belief_response(request):
         if choice in correct_choices:
             correctCount += 1
 
-    worker.comprehension_belief_all_attempted = True
-    # Set the passing criteria. Right now all the answers need to be correct to pass
-    if correctCount == ComprehensionBeliefQuestion.objects.all().count():
-        worker.comprehension_belief_passed = True
-    worker.save()
+    if worker.comprehension_belief_failed_times < 2:
+        # Set the passing criteria. Right now all the answers need to be correct to pass
+        if correctCount == ComprehensionBeliefQuestion.objects.all().count():
+            worker.comprehension_belief_passed = True
+            worker.comprehension_belief_all_attempted = True
+        else:
+            worker.comprehension_belief_failed_times += 1
+        worker.save()
+
+    if worker.comprehension_belief_failed_times == 2:
+        worker.comprehension_belief_all_attempted = True
+        worker.comprehension_belief_passed = False
+        worker.save()
 
     response_data = {}
     response_data["worker_id"] = worker.worker_id
     response_data["status"] = "Answers Submitted Successfully"
     response_data["comprehension_belief_all_attempted"] = worker.comprehension_belief_all_attempted
+    response_data["comprehension_belief_failed_times"] = worker.comprehension_belief_failed_times
     response_data["comprehension_belief_passed"] = worker.comprehension_belief_passed
     response_data["type_work"] = worker.type_work
 
@@ -274,5 +291,3 @@ def get_dss_response(request):
     response_data['likelihoodAcceptanceValue'] = random.uniform(0, 1)
     response_data['likelihoodMaximumIncome'] = random.uniform(0, 1)
     return Response(response_data, status=status.HTTP_200_OK)
-
-
