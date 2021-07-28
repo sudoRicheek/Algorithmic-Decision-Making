@@ -39,22 +39,22 @@ class ComprehensionChoice(models.Model):
         return self.choice_text
 
 
-class PostExperimentalQuestion(models.Model):
-    question_text = models.TextField(blank=True, null=True)
-    date_posted = models.DateTimeField(
-        auto_now_add=True, verbose_name="date posted", editable=False)
+# class PostExperimentalQuestion(models.Model):
+#     question_text = models.TextField(blank=True, null=True)
+#     date_posted = models.DateTimeField(
+#         auto_now_add=True, verbose_name="date posted", editable=False)
 
-    def __str__(self) -> str:
-        return self.question_text
+#     def __str__(self) -> str:
+#         return self.question_text
 
 
-class PostExperimentalChoice(models.Model):
-    question = models.ForeignKey(
-        PostExperimentalQuestion, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
+# class PostExperimentalChoice(models.Model):
+#     question = models.ForeignKey(
+#         PostExperimentalQuestion, on_delete=models.CASCADE)
+#     choice_text = models.CharField(max_length=200)
 
-    def __str__(self) -> str:
-        return self.choice_text
+#     def __str__(self) -> str:
+#         return self.choice_text
 
 
 class ComprehensionBeliefQuestion(models.Model):

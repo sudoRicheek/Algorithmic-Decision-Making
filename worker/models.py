@@ -1,7 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-from question.models import AttentionChoice, ComprehensionBeliefChoice, ComprehensionChoice, PostExperimentalChoice
+from question.models import AttentionChoice, ComprehensionBeliefChoice, ComprehensionChoice
 
 
 class Worker(models.Model):

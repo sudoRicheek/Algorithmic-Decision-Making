@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 
 from django.shortcuts import get_object_or_404
 
-from question.models import AttentionCheckQuestion, AttentionChoice, ComprehensionBeliefChoice, ComprehensionBeliefQuestion, ComprehensionChoice, ComprehensionQuestion, PostExperimentalChoice, PostExperimentalQuestion
+from question.models import AttentionCheckQuestion, AttentionChoice, ComprehensionBeliefChoice, ComprehensionBeliefQuestion, ComprehensionChoice, ComprehensionQuestion
 from worker.models import Worker
 
 
