@@ -157,10 +157,11 @@ def get_uniquecode(request):
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
     if worker.unique_code_generated:
-        return Response({"status": "Unique Code", "unique_code": worker.unique_code}, status=status.HTTP_200_OK)
+        return Response({"status": "Unique Code", "unique_code": worker.unique_code, "redirection_url": REDIRECTION_URL}, status=status.HTTP_200_OK)
 
     if worker.attention_passed and worker.survey_submitted and worker.comprehension_passed and worker.comprehension_belief_passed and worker.belief_elicitation_attempted and worker.postexperimental_submitted:
-        worker.unique_code = secrets.token_urlsafe(32) # Replace with UNIQUE_CODE
+        # worker.unique_code = secrets.token_urlsafe(32) # Replace with UNIQUE_CODE
+        worker.unique_code = UNIQUE_CODE
         worker.unique_code_generated = True
         worker.save()
     else:
@@ -169,7 +170,7 @@ def get_uniquecode(request):
     response_data = {}
     response_data["status"] = "Unique Code"
     response_data["worker_id"] = worker.worker_id
-    response_data["unique_code"] = worker.unique_code
+    response_data["unique_code"] = UNIQUE_CODE
     response_data["redirection_url"] = REDIRECTION_URL
 
     return Response(response_data, status=status.HTTP_200_OK)
