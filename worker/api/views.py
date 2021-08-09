@@ -1,3 +1,7 @@
+import os
+import dotenv
+from pathlib import Path
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -151,8 +155,13 @@ def submit_dss_proposer_response(request):
 
 @api_view(['POST', ])
 def get_uniquecode(request):
-    REDIRECTION_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    UNIQUE_CODE = "SOMECODE"
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    dotenv_file = os.path.join(BASE_DIR, ".env")
+    if os.path.isfile(dotenv_file):
+        dotenv.load_dotenv(dotenv_file)
+        
+    REDIRECTION_URL = os.environ['REDIRECTION_URL']
+    UNIQUE_CODE = os.environ['UNIQUE_CODE']
 
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
