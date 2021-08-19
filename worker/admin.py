@@ -44,12 +44,12 @@ def download_csv(modeladmin, request, queryset):
 
 class WorkerAdmin(admin.ModelAdmin):
     list_display = ('worker_id',
-                    'attention_passed',
                     'comprehension_passed',
                     'type_work',
+                    'comprehension_belief_passed',
                     'belief_elicitation_attempted',
-                    'postexperimental_submitted')
-    list_filter = ('attention_passed', 'comprehension_passed')
+                    'survey_submitted')
+    list_filter = ('comprehension_passed','comprehension_belief_passed')
     readonly_fields = ('unique_code',)
     ordering = ['worker_id']
     actions = [download_csv]

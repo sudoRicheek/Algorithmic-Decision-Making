@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 
 from django.shortcuts import get_object_or_404, resolve_url
 
-from question.models import AttentionCheckQuestion, ComprehensionQuestion
+from question.models import ComprehensionQuestion
 from worker.models import Worker
 
 import secrets
@@ -59,6 +59,7 @@ def get_worker_type(request):
     response_data["comprehension_all_attempted"] = worker.comprehension_all_attempted
     response_data["comprehension_passed"] = worker.comprehension_passed
     response_data["type_work"] = worker.type_work
+    response_data["proposer_type"] = worker.proposer_type
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -136,14 +137,14 @@ def submit_dss_proposer_response(request):
     if worker.type_work != 1:
         return Response({"status": "notAllowedHere"}, status=status.HTTP_403_FORBIDDEN)
 
-    if worker.dssProposerAllocation != -1:
+    if worker.proposer_offer != -1:
         return Response({"status": "Already Submitted"}, status=status.HTTP_403_FORBIDDEN)
 
     allocationSubmitted = request.data.get('allocationSubmitted', -1)
     if allocationSubmitted not in [1, 2, 3, 4, 5, 6]:
         return Response({"status": "Bad Allocation"}, status=status.HTTP_400_BAD_REQUEST)
 
-    worker.dssProposerAllocation = allocationSubmitted
+    worker.proposer_offer = allocationSubmitted
     worker.save()
 
     response_data = {}
@@ -168,7 +169,7 @@ def get_uniquecode(request):
     if worker.unique_code_generated:
         return Response({"status": "Unique Code", "unique_code": worker.unique_code, "redirection_url": REDIRECTION_URL}, status=status.HTTP_200_OK)
 
-    if worker.attention_passed and worker.survey_submitted and worker.comprehension_passed and worker.comprehension_belief_passed and worker.belief_elicitation_attempted and worker.postexperimental_submitted:
+    if worker.comprehension_passed and worker.comprehension_belief_passed and worker.belief_elicitation_attempted and worker.survey_submitted:
         # worker.unique_code = secrets.token_urlsafe(32) # Replace with UNIQUE_CODE
         worker.unique_code = UNIQUE_CODE
         worker.unique_code_generated = True
@@ -226,15 +227,26 @@ def post_survey_responses(request):
     if worker.survey_submitted:
         return Response({"status": "alreadySubmitted"}, status=status.HTTP_400_BAD_REQUEST)
 
-    nr = [e for e in request.data.get("nr", [])]
-    svo = [e for e in request.data.get("SVO", [])]
+    trustauto = [e for e in request.data.get("trustauto", [])]
+    do_responders_consider_dss_while_deciding_proposers = request.data.get("do_responders_consider_dss_while_deciding_proposers", -1)
+    do_responders_consider_dss_while_deciding_proposers = True if do_responders_consider_dss_while_deciding_proposers == "1" else False
+    which_proposer_you_would_choose_tobe = request.data.get("which_proposer_you_would_choose_tobe", -1)
+    if_resp_which_proposer_would_you_approach = request.data.get("if_resp_which_proposer_would_you_approach", -1)
+    proposer_most_responders_approach = request.data.get("proposer_most_responders_approach", -1)
+
+    i_think_responders = [e for e in request.data.get("i_think_responders", [])]
+
     sex = request.data.get("sex", '')
     age = request.data.get("age", 1)
     employmentStatus = request.data.get("employmentStatus", '')
     highestDegree = request.data.get("highestDegree", '')
 
-    worker.svo_selected_indices = svo
-    worker.negative_reciprocity = nr
+    worker.trust_automation = trustauto
+    worker.do_responders_consider_dss_while_deciding_proposers = do_responders_consider_dss_while_deciding_proposers
+    worker.which_proposer_you_would_choose_tobe = which_proposer_you_would_choose_tobe
+    worker.if_resp_which_proposer_would_you_approach = if_resp_which_proposer_would_you_approach
+    worker.proposer_most_responders_approach = proposer_most_responders_approach
+    worker.i_think_responders = i_think_responders
     worker.sex = sex
     worker.age = age
     worker.employment_status = employmentStatus

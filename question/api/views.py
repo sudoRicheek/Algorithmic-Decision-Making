@@ -6,69 +6,65 @@ from rest_framework.decorators import api_view
 
 from django.shortcuts import get_object_or_404
 
-from question.models import AttentionCheckQuestion, AttentionChoice, ComprehensionBeliefChoice, ComprehensionBeliefQuestion, ComprehensionChoice, ComprehensionQuestion
+from question.models import ComprehensionBeliefChoice, ComprehensionBeliefQuestion, ComprehensionChoice, ComprehensionQuestion
 from worker.models import Worker
 
 
-@api_view(['POST', ])
-def post_att_check_response(request):
-    # time.sleep(2)
-    # If worker not found -> make worker
-    if 'worker_id' in request.data.keys() and not Worker.objects.filter(worker_id=request.data.get("worker_id")).exists():
-        new_worker = Worker(worker_id=request.data.get("worker_id", ""))
-        new_worker.save()
+# @api_view(['POST', ])
+# def post_att_check_response(request):
+#     # time.sleep(2)
+#     # If worker not found -> make worker
+#     if 'worker_id' in request.data.keys() and not Worker.objects.filter(worker_id=request.data.get("worker_id")).exists():
+#         new_worker = Worker(worker_id=request.data.get("worker_id", ""))
+#         new_worker.save()
 
-    # Get worker -> add responses
-    worker = get_object_or_404(
-        Worker, worker_id=request.data.get("worker_id", -1))
-    if worker.attention_passed:
-        return Response({"status": "alreadyPassed"}, status=status.HTTP_400_BAD_REQUEST)
-    if worker.attention_all_attempted:
-        return Response({"status": "alreadyFailed"}, status=status.HTTP_400_BAD_REQUEST)
+#     # Get worker -> add responses
+#     worker = get_object_or_404(
+#         Worker, worker_id=request.data.get("worker_id", -1))
+#     if worker.attention_passed:
+#         return Response({"status": "alreadyPassed"}, status=status.HTTP_400_BAD_REQUEST)
+#     if worker.attention_all_attempted:
+#         return Response({"status": "alreadyFailed"}, status=status.HTTP_400_BAD_REQUEST)
 
-    q_list = [q.get('q_id', -1) for q in request.data.get("answers", [])]
-    q_list = set(q_list)
-    if len(q_list) != AttentionCheckQuestion.objects.all().count():
-        return Response({"status": "All questions must be answered before submitting"}, status=status.HTTP_400_BAD_REQUEST)
+#     q_list = [q.get('q_id', -1) for q in request.data.get("answers", [])]
+#     q_list = set(q_list)
+#     if len(q_list) != AttentionCheckQuestion.objects.all().count():
+#         return Response({"status": "All questions must be answered before submitting"}, status=status.HTTP_400_BAD_REQUEST)
 
-    correctCount = 0
-    for answerDict in request.data.get("answers", []):
-        q_id = answerDict.get('q_id', -1)
-        c_id = answerDict.get('c_id', -1)
-        if q_id == -1 or c_id == -1:
-            return Response({"status": "q_id and c_id must be present"}, status=status.HTTP_400_BAD_REQUEST)
+#     correctCount = 0
+#     for answerDict in request.data.get("answers", []):
+#         q_id = answerDict.get('q_id', -1)
+#         c_id = answerDict.get('c_id', -1)
+#         if q_id == -1 or c_id == -1:
+#             return Response({"status": "q_id and c_id must be present"}, status=status.HTTP_400_BAD_REQUEST)
 
-        question = get_object_or_404(AttentionCheckQuestion, pk=q_id)
-        choice = get_object_or_404(AttentionChoice, pk=c_id)
+#         question = get_object_or_404(AttentionCheckQuestion, pk=q_id)
+#         choice = get_object_or_404(AttentionChoice, pk=c_id)
 
-        worker.attention_responses.add(choice)
-        correct_choices = question.attentionchoice_set.filter(is_answer=True)
-        if choice in correct_choices:
-            correctCount += 1
+#         worker.attention_responses.add(choice)
+#         correct_choices = question.attentionchoice_set.filter(is_answer=True)
+#         if choice in correct_choices:
+#             correctCount += 1
 
-    worker.attention_all_attempted = True
-    # Set whatever the passign criteria
-    if correctCount == AttentionCheckQuestion.objects.all().count():
-        worker.attention_passed = True
-    worker.save()
+#     worker.attention_all_attempted = True
+#     # Set whatever the passign criteria
+#     if correctCount == AttentionCheckQuestion.objects.all().count():
+#         worker.attention_passed = True
+#     worker.save()
 
-    response_data = {}
-    response_data["worker_id"] = worker.worker_id
-    response_data["status"] = "Answers Submitted Successfully"
-    response_data["attention_all_attempted"] = worker.attention_all_attempted
-    response_data["attention_passed"] = worker.attention_passed
+#     response_data = {}
+#     response_data["worker_id"] = worker.worker_id
+#     response_data["status"] = "Answers Submitted Successfully"
+#     response_data["attention_all_attempted"] = worker.attention_all_attempted
+#     response_data["attention_passed"] = worker.attention_passed
 
-    return Response(response_data, status=status.HTTP_200_OK)
+#     return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST', ])
 def post_comprehension_response(request):
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
-    if not worker.attention_all_attempted:
-        return Response({"status": "attentionNoAttempt"}, status=status.HTTP_400_BAD_REQUEST)
-    if not worker.attention_passed:
-        return Response({"status": "attentionFailed"}, status=status.HTTP_403_FORBIDDEN)
     if worker.comprehension_all_attempted:
         return Response({"status": "alreadyAttempted"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -100,7 +96,7 @@ def post_comprehension_response(request):
             worker.comprehension_all_attempted = True
             if worker.type_work == -1:
                 # worker.type_work = random.randint(0, 1)
-                worker.type_work = 0
+                worker.type_work = 1
         else:
             worker.comprehension_failed_times += 1
         worker.save()
@@ -125,10 +121,6 @@ def post_comprehension_response(request):
 def post_comprehension_belief_response(request):
     worker = get_object_or_404(
         Worker, worker_id=request.data.get("worker_id", -1))
-    if not worker.attention_all_attempted:
-        return Response({"status": "attentionNoAttempt"}, status=status.HTTP_400_BAD_REQUEST)
-    if not worker.attention_passed:
-        return Response({"status": "attentionFailed"}, status=status.HTTP_403_FORBIDDEN)
     if not worker.comprehension_all_attempted:
         return Response({"status": "comprehensionNoAttempt"}, status=status.HTTP_403_FORBIDDEN)
     if not worker.comprehension_passed:
@@ -162,6 +154,10 @@ def post_comprehension_belief_response(request):
         if correctCount == ComprehensionBeliefQuestion.objects.all().count():
             worker.comprehension_belief_passed = True
             worker.comprehension_belief_all_attempted = True
+            if worker.proposer_type == -1:
+                # 1 -> without DSS
+                # 2 -> with DSS
+                worker.proposer_type = random.randint(1, 2)
         else:
             worker.comprehension_belief_failed_times += 1
         worker.save()
@@ -178,6 +174,7 @@ def post_comprehension_belief_response(request):
     response_data["comprehension_belief_failed_times"] = worker.comprehension_belief_failed_times
     response_data["comprehension_belief_passed"] = worker.comprehension_belief_passed
     response_data["type_work"] = worker.type_work
+    response_data["proposer_type"] = worker.proposer_type
 
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -216,18 +213,18 @@ def post_comprehension_belief_response(request):
 #     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET', ])
-def get_attention_questions(request):
-    # time.sleep(2)
-    attentioncheck_questions = AttentionCheckQuestion.objects.all()
-    data = {}
-    data['questions'] = [{"id": question.id,
-                          "question_text": question.question_text,
-                          "choices": [{"id": choice.id,
-                                       "choice_text": choice.choice_text,
-                                       } for choice in question.attentionchoice_set.all()],
-                          } for question in attentioncheck_questions]
-    return Response(data, status=status.HTTP_200_OK)
+# @api_view(['GET', ])
+# def get_attention_questions(request):
+#     # time.sleep(2)
+#     attentioncheck_questions = AttentionCheckQuestion.objects.all()
+#     data = {}
+#     data['questions'] = [{"id": question.id,
+#                           "question_text": question.question_text,
+#                           "choices": [{"id": choice.id,
+#                                        "choice_text": choice.choice_text,
+#                                        } for choice in question.attentionchoice_set.all()],
+#                           } for question in attentioncheck_questions]
+#     return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', ])

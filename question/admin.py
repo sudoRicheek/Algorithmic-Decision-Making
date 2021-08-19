@@ -1,10 +1,7 @@
 from django.contrib import admin
-from django.db.models.query import QuerySet
 
-from .models import AttentionCheckQuestion, AttentionChoice, ComprehensionBeliefChoice, ComprehensionBeliefQuestion, ComprehensionQuestion, ComprehensionChoice
+from .models import ComprehensionBeliefChoice, ComprehensionBeliefQuestion, ComprehensionQuestion, ComprehensionChoice
 
-admin.site.register([AttentionCheckQuestion, AttentionChoice,
-                    ComprehensionQuestion, ComprehensionChoice,
-                    # PostExperimentalQuestion, PostExperimentalChoice,
+admin.site.register([ComprehensionQuestion, ComprehensionChoice,
                     ComprehensionBeliefQuestion, ComprehensionBeliefChoice])
 # Register your models here.
