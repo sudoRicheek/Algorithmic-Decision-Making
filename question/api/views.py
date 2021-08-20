@@ -174,7 +174,7 @@ def post_comprehension_belief_response(request):
     response_data["comprehension_belief_failed_times"] = worker.comprehension_belief_failed_times
     response_data["comprehension_belief_passed"] = worker.comprehension_belief_passed
     response_data["type_work"] = worker.type_work
-    response_data["proposer_type"] = worker.proposer_type
+    # response_data["proposer_type"] = worker.proposer_type
 
     return Response(response_data, status=status.HTTP_200_OK)
 

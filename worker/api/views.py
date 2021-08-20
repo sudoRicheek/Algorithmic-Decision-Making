@@ -70,20 +70,20 @@ def submit_worker_beliefs(request):
     predictions = [e for e in request.data.get("predictions", [])]
     if worker.type_work == -1:
         return Response({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
-    elif worker.type_work == 0:
+    elif worker.type_work == 0 or worker.type_work == 1:
         if len(predictions) != 18:
             return Response({"status": "18 predictions required"}, status=status.HTTP_400_BAD_REQUEST)
-    elif worker.type_work == 1:
-        if len(predictions) != 6:
-            return Response({"status": "6 predictions expected"}, status=status.HTTP_400_BAD_REQUEST)
+    # elif worker.type_work == 1:
+    #     if len(predictions) != 6:
+    #         return Response({"status": "6 predictions expected"}, status=status.HTTP_400_BAD_REQUEST)
     if worker.belief_elicitation_attempted:
         return Response({"status": "alreadyAttempted"}, status=status.HTTP_403_FORBIDDEN)
 
     # Ensure row number is between 1 and 21
-    if worker.type_work == 0:
+    if worker.type_work == 0 or worker.type_work == 1:
         predictions = [predictions[:6], predictions[6:12], predictions[12:]]
-    elif worker.type_work == 1:
-        predictions = [predictions]
+    # elif worker.type_work == 1:
+    #     predictions = [predictions]
 
     worker.belief_elicitation = predictions
     worker.belief_elicitation_attempted = True
@@ -243,7 +243,7 @@ def post_survey_responses(request):
 
     worker.trust_automation = trustauto
     worker.do_responders_consider_dss_while_deciding_proposers = do_responders_consider_dss_while_deciding_proposers
-    worker.which_proposer_you_would_choose_tobe = which_proposer_you_would_choose_tobe
+    worker.which_proposer_you_would_choose_to_be = which_proposer_you_would_choose_tobe
     worker.if_resp_which_proposer_would_you_approach = if_resp_which_proposer_would_you_approach
     worker.proposer_most_responders_approach = proposer_most_responders_approach
     worker.i_think_responders = i_think_responders
