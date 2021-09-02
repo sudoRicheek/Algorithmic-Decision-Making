@@ -38,7 +38,7 @@ ALLOWED_HOSTS = [
     '0.0.0.0',
     'localhost',
     '127.0.0.1',
-    'adm-django-backend.herokuapp.com',
+    'adm-django-backend-resp.herokuapp.com',
 ]
 
 
@@ -78,7 +78,7 @@ MIDDLEWARE = [
 CORS_ORIGIN_WHITELIST = [
     # 'http://localhost:4200',
     # 'http://192.168.0.106:4200',
-    'https://algorithmic-decision-making.herokuapp.com',
+    'https://algo-decision-making-resp.herokuapp.com',
 ]
 
 ROOT_URLCONF = 'adm.urls'
